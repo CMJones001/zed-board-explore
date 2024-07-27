@@ -40,23 +40,39 @@ module blinky
     reg [max_length:0] count = 0;
     reg [7:0] temp = 0;
     
-    reg [3:0] data; 
-
-    always @(posedge(GCLK)) begin
-        data <= SW[3:0];
-    end
+    wire [3:0] data_one;
+    wire [3:0] data_two;
+    reg [3:0] data;
     
-    reg digit_select = 1;
+    assign data_one = SW[3:0];
+    assign data_two = SW[7:4];
 
-    display_digit ssd_one(
+    reg digit_select;
+    
+    reg [7:0] ssd_one_out;
+    reg [7:0] ssd_two_out;
+    
+    display_digit ssd_one_mod(
         .clk(GCLK),
-        .seven_seg_value(data),
-        .digit_select(digit_select),
-        .digit(JC)
+        .seven_seg_value(data_one),
+        .digit_select(1),
+        .digit(ssd_one_out)
     );
+    display_digit ssd_two_mod(
+        .clk(GCLK),
+        .seven_seg_value(data_two),
+        .digit_select(0),
+        .digit(ssd_two_out)
+    );
+    
+    always @(posedge(GCLK)) begin 
+        case (count[15])
+            0 : JC <= ssd_one_out;
+            1 : JC <= ssd_two_out;
+        endcase
+    end
 
     always @(posedge(GCLK)) count <= count + 1;
-
     always @(*) begin
         case({ count[max_length], count[max_length-1], count[max_length-2] })
             3'b000 : temp = 8'b00000001;
