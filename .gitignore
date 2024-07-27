@@ -4,6 +4,8 @@
 zed_board_blinky.xpr
 zed_board_blinky.runs/
 
+.direnv
+
 # [home]
 *.jou
 *.log
