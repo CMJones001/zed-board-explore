@@ -25,9 +25,11 @@ module blinky
     input GCLK,
     input reg [7:0] SW,
     input reg BTNC,
+    input reg BTNR,
+    input reg BTNL,
     output reg [7:0] LED,
     output [7:0] JC,
-    output reg [7:0] JD
+    output [7:0] JD
     );
 
     parameter int max_length = 26;
@@ -38,11 +40,24 @@ module blinky
     reg [3:0] digit_two;
     reg [7:0] stored_switches;
 
+    // Bit to select the SSD digit, causes bleed through if too low
+    // Should also be larger than _duty_bits_
     parameter ssd_switch_bit = 15;
     reg digit_select;
 
     parameter int duty_bits = 10; // 1024 counts
-    parameter int duty_on = 2 ** duty_bits * 0.2; // ~ 20% duty
+    reg [9:0] duty_on = 100; // ~ 20% duty
+
+    always @(posedge(GCLK)) begin
+        if (BTNR) begin
+            if (duty_on == 1000) duty_on = 100;
+            else duty_on = duty_on + 100;
+        end
+        if (BTNL) begin
+            if (duty_on == 100) duty_on = 1000;
+            else duty_on = duty_on - 100;
+        end
+    end
 
     // Set a disabling mask on the SSD that turns off the display
     // based on the duty cycle.
@@ -99,11 +114,13 @@ module blinky
 
     always @(posedge(GCLK)) count <= count + 1;
 
-    LED_roller #(.count_length(max_length)) (
-        .clk(GCLK),
-        .count(count),
-        .LED(LED)
-    );
+    assign LED = SW;
+
+//    LED_roller #(.count_length(max_length)) (
+//        .clk(GCLK),
+//        .count(count),
+//        .LED(LED)
+//    );
 
 endmodule
 
@@ -114,24 +131,18 @@ module LED_roller
     input reg [count_length:0] count,
     output reg [7:0] LED
 );
-    reg [7:0] led_out = 0;
-
     always @(posedge(clk)) begin
         case({ count[count_length], count[count_length-1], count[count_length-2] })
-            3'b000 : led_out = 8'b00000001;
-            3'b001 : led_out = 8'b00000010;
-            3'b010 : led_out = 8'b00000100;
-            3'b011 : led_out = 8'b00001000;
-            3'b100 : led_out = 8'b00010000;
-            3'b101 : led_out = 8'b00100000;
-            3'b110 : led_out = 8'b01000000;
-            3'b111 : led_out = 8'b10000000;
+            3'b000 : LED = 8'b00000001;
+            3'b001 : LED = 8'b00000010;
+            3'b010 : LED = 8'b00000100;
+            3'b011 : LED = 8'b00001000;
+            3'b100 : LED = 8'b00010000;
+            3'b101 : LED = 8'b00100000;
+            3'b110 : LED = 8'b01000000;
+            3'b111 : LED = 8'b10000000;
 
-            default : led_out = 8'b00000000;
+            default : LED = 8'b00000000;
         endcase
-    end
-
-    always @(posedge(clk)) begin
-        LED <= led_out;
     end
 endmodule

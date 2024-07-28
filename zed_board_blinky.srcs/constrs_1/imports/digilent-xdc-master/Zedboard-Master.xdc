@@ -204,8 +204,8 @@ set_property PACKAGE_PIN U14 [get_ports {LED[7]}];  # "LD7"
 # ----------------------------------------------------------------------------
 set_property PACKAGE_PIN P16 [get_ports {BTNC}];  # "BTNC"
 #set_property PACKAGE_PIN R16 [get_ports {BTND}];  # "BTND"
-#set_property PACKAGE_PIN N15 [get_ports {BTNL}];  # "BTNL"
-#set_property PACKAGE_PIN R18 [get_ports {BTNR}];  # "BTNR"
+set_property PACKAGE_PIN N15 [get_ports {BTNL}];  # "BTNL"
+set_property PACKAGE_PIN R18 [get_ports {BTNR}];  # "BTNR"
 #set_property PACKAGE_PIN T18 [get_ports {BTNU}];  # "BTNU"
 
 # ----------------------------------------------------------------------------
